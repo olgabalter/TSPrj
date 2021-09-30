@@ -58,7 +58,6 @@ resources:
     properties:
       totalMemoryMB: '${input.memory}'
       customizationSpec: '${input.custSpec}'
-      Custom_LicenseAgreement_Link: '${propgroup.LicenseAgreement_CS_constants.Custom_LicenseAgreement_Link}'
       imageRef: '${input.template}'
       cpuCount: '${input.cpu}'
       password: '${input.lin_Password}'
