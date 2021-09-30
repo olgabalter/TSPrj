@@ -1,0 +1,67 @@
+name: Technion - CourseA Ubuntu Server 20.04
+version: 1
+formatVersion: 1
+inputs:
+  lin_Password:
+    type: string
+    encrypted: true
+    title: Password
+    description: null
+  LicenseAgreement_CS_inputs:
+    type: object
+    title: License Agreement
+    $ref: /ref/property-groups/LicenseAgreement_CS_inputs
+  lin_cpu:
+    type: integer
+    title: VM CPU
+    default: 2
+    minimum: 2
+    maximum: 32
+    encrypted: false
+  lin_memory:
+    type: integer
+    title: VM Memory
+    default: 4096
+    minimum: 4096
+    maximum: 32768
+    encrypted: false
+  addStorage:
+    type: boolean
+    default: false
+    title: Add additional disk
+  diskSize:
+    type: integer
+    title: Disk Size
+    default: 0
+resources:
+  Cloud_vSphere_Network_1:
+    type: Cloud.vSphere.Network
+    metadata:
+      layoutPosition:
+        - 0
+        - 0
+    properties:
+      networkType: existing
+      constraints:
+        - tag: '${env.projectName}'
+  Ubuntu:
+    type: Cloud.vSphere.Machine
+    metadata:
+      layoutPosition:
+        - 1
+        - 0
+    properties:
+      totalMemoryMB: '${input.lin_memory}'
+      customizationSpec: VRA-LinuxCustomization
+      Custom_LicenseAgreement_Link: '${propgroup.LicenseAgreement_CS_constants.Custom_LicenseAgreement_Link}'
+      imageRef: courseAubsrv
+      cpuCount: '${input.lin_cpu}'
+      password: '${input.lin_Password}'
+      addDisk: '${input.addStorage}'
+      diskSize: '${input.diskSize}'
+      Custom_LicenseAgreement_Accept: '${input.LicenseAgreement_CS_inputs.Custom_LicenseAgreement_Accept}'
+      networks:
+        - network: '${resource.Cloud_vSphere_Network_1.id}'
+          assignment: static
+      constraints:
+        - tag: '${env.projectName}'
