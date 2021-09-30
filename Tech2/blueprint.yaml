@@ -1,4 +1,4 @@
-name: Technion - LCCN with dynamic template
+name: Technion - Course-B Ubuntu Server 20.04
 version: 1
 formatVersion: 1
 inputs:
@@ -11,26 +11,20 @@ inputs:
     type: object
     title: License Agreement
     $ref: /ref/property-groups/LicenseAgreement_CS_inputs
-  cpu:
+  lin_cpu:
     type: integer
     title: VM CPU
     default: 2
     minimum: 2
     maximum: 32
     encrypted: false
-  memory:
+  lin_memory:
     type: integer
     title: VM Memory
     default: 4096
     minimum: 4096
     maximum: 32768
     encrypted: false
-  template:
-    type: string
-    title: VM Template
-  custSpec:
-    type: string
-    title: Customization Spec
   addStorage:
     type: boolean
     default: false
@@ -50,18 +44,18 @@ resources:
       networkType: existing
       constraints:
         - tag: '${env.projectName}'
-  VM:
+  Ubuntu:
     type: Cloud.vSphere.Machine
     metadata:
       layoutPosition:
         - 1
         - 0
     properties:
-      totalMemoryMB: '${input.memory}'
-      customizationSpec: '${input.custSpec}'
+      totalMemoryMB: '${input.lin_memory}'
+      customizationSpec: VRA-LinuxCustomization
       Custom_LicenseAgreement_Link: '${propgroup.LicenseAgreement_CS_constants.Custom_LicenseAgreement_Link}'
-      imageRef: '${input.template}'
-      cpuCount: '${input.cpu}'
+      imageRef: courseBubuntusrv
+      cpuCount: '${input.lin_cpu}'
       password: '${input.lin_Password}'
       addDisk: '${input.addStorage}'
       diskSize: '${input.diskSize}'
