@@ -1,0 +1,143 @@
+formatVersion: 1
+inputs:
+  criticalLevel:
+    type: string
+    title: Env Type
+    oneOf:
+      - title: Development
+        const: dev
+      - title: Test
+        const: tst
+      - title: Production
+        const: prd
+  Network:
+    type: string
+    oneOf:
+      - title: ADMIN
+        const: admin
+      - title: ADMIN-DMZ
+        const: admindmz
+      - title: CORP
+        const: corp
+  Role:
+    type: string
+    title: Server Role
+    oneOf:
+      - title: Database Server
+        const: db
+      - title: WebServer
+        const: wb
+      - title: Application Server
+        const: ap
+  cluster:
+    type: number
+    default: 1
+    title: Number of VMs to Deploy
+    minimum: 1
+    maximum: 4
+  monitoring:
+    type: boolean
+    default: false
+    title: 'VM Monitoring '
+  backup:
+    type: boolean
+    default: false
+    title: VM Backup
+  cpu:
+    type: integer
+    description: ''
+    default: 4
+    title: CPUs
+    minimum: 4
+    maximum: 16
+  memory:
+    type: integer
+    default: 8
+    title: Memory (GB)
+    minimum: 4
+    maximum: 32
+  storage:
+    type: integer
+    title: Storage (GB)
+    default: '60'
+    minimum: 60
+    maximum: 60
+  addStorage:
+    type: boolean
+    default: false
+    title: Add additional storage
+  disks:
+    type: array
+    title: disks
+    items:
+      title: disk
+      type: object
+      properties:
+        size:
+          type: integer
+          title: size
+    maxItems: 1
+  storageTag:
+    type: string
+resources:
+  Cloud_vSphere_Network_1:
+    type: Cloud.vSphere.Network
+    metadata:
+      layoutPosition:
+        - 0
+        - 0
+    properties:
+      networkType: existing
+      constraints:
+        - tag: '${input.Network}'
+  Cloud_vSphere_Machine_1:
+    type: Cloud.vSphere.Machine
+    metadata:
+      layoutPosition:
+        - 1
+        - 0
+    properties:
+      name: dev
+      count: '${input.cluster}'
+      cpuCount: '${input.cpu}'
+      totalMemoryMB: '${input.memory*1024}'
+      storage:
+        constraints:
+          - tag: '${input.storageTag}'
+      vMSoftwareScriptPath: 'c:\temp\date.bat'
+      imageRef: win2016template
+      VMSoftwareName: Date and Time into textfile
+      customizationSpec: win2016-in
+      extPolicyActivedirectoryid: ind_Win_ou
+      backup: '${input.backup}'
+      supportPriority: '${input.criticalLevel}'
+      role: '${input.Role}'
+      networkID: '${input.Network}'
+      monitoring: '${input.monitoring}'
+      vmOS: w
+      setCustomHostnameOS: Windows
+      resourceGroupName: windows
+      customSetCustomHostnamePatching: WEEK_2
+      customSetCustomHostnameRole: Database Server
+      networks:
+        - tags: []
+          network: '${resource.Cloud_vSphere_Network_1.id}'
+          assignment: static
+          assignIPv6Address: false
+          assignPublicIpAddress: false
+      attachedDisks:
+        - source: '${resource.Cloud_Volume_1.id}'
+      retryCount: 0
+      cloneStrategy: FULL
+  Cloud_Volume_1:
+    type: Cloud.Volume
+    metadata:
+      layoutPosition:
+        - 1
+        - 1
+    allocatePerInstance: true
+    properties:
+      capacityGb: '${input.disks[count.index].size}'
+      count: '${length(input.disks)}'
+      constraints:
+        - tag: '${input.storageTag}'

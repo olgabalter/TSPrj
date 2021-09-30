@@ -1,0 +1,211 @@
+formatVersion: 1
+inputs:
+  LinuxAgentPIMArguments:
+    type: string
+    default: /root/amdocs/hpsccm/media
+    title: LinuxAgentPIMArguments
+  LinuxAgentILMTArguments:
+    type: string
+    default: /root/amdocs/hplmt/media
+    title: LinuxAgentILMTArguments
+  LinuxAgentMonitoringArguments:
+    type: string
+    default: /root/amdocs/hpav/media
+    title: LinuxAgentMonitoringArguments
+  LinuxAgentUDArguments:
+    type: string
+    default: /root/amdocs/hpud/media
+    title: LinuxAgentUDArguments
+  LinuxAgentUDPath:
+    type: string
+    default: /root/amdocs/hpudplay.yml
+    title: LinuxAgentUDPath
+  LAMPInstallationScriptPath:
+    type: string
+    default: /patch/kubernetes/multivmblueprint.yml
+    title: LAMPInstallationScriptPath
+  LinuxAgentMonitoringPath:
+    type: string
+    default: /root/amdocs/hpavplay.yml
+    title: LinuxAgentMonitoringPath
+  LAMPHostPath:
+    type: string
+    default: /patch/hosts
+    title: LAMPHostPath
+  LinuxAgentILMTPath:
+    type: string
+    default: /root/amdocs/hplmtplay.yml
+    title: LinuxAgentILMTPath
+  LinuxAgentPIMPath:
+    type: string
+    default: /root/amdocs/hpsccmplay.yml
+    title: LinuxAgentPIMPath
+  criticalLevel:
+    type: string
+    title: Env Type
+    oneOf:
+      - title: Development
+        const: dev
+      - title: Test
+        const: tst
+      - title: Production
+        const: prd
+  Role:
+    type: string
+    title: Server Role
+    oneOf:
+      - title: Database Server
+        const: db
+      - title: WebServer
+        const: wb
+      - title: Application Server
+        const: ap
+  monitoring:
+    type: boolean
+    default: false
+    title: 'VM Monitoring '
+  backup:
+    type: boolean
+    default: false
+    title: VM Backup
+  cpu:
+    type: integer
+    default: 2
+    title: CPUs
+    minimum: 2
+    maximum: 6
+  memory:
+    type: integer
+    description: Minimum value 4GB - Maximum value 16GB
+    default: 4
+    title: Memory (GB)
+    minimum: 4
+    maximum: 16
+  Network:
+    type: string
+    oneOf:
+      - title: ADMIN
+        const: admin
+      - title: ADMIN-DMZ
+        const: admindmz
+      - title: CORP
+        const: corp
+  addStorage:
+    type: boolean
+    default: false
+    title: 'Add additional storage '
+  disks:
+    type: integer
+    default: 20
+    title: Disk capacity
+    minimum: 20
+    maximum: 200
+  storageTag:
+    type: string
+resources:
+  Cloud_vSphere_Network_1:
+    type: Cloud.vSphere.Network
+    metadata:
+      layoutPosition:
+        - 0
+        - 0
+    properties:
+      networkType: existing
+      constraints:
+        - tag: '${input.Network}'
+  Cloud_vSphere_Machine_1:
+    type: Cloud.vSphere.Machine
+    metadata:
+      layoutPosition:
+        - 1
+        - 0
+    properties:
+      imageRef: MIS_RHEL_7.6_Vanilla
+      cpuCount: '${input.cpu}'
+      totalMemoryMB: '${input.memory*1024}'
+      storage:
+        constraints:
+          - tag: '${input.storageTag}'
+      customizationSpec: Linux-in
+      supportPriority: '${input.criticalLevel}'
+      role: '${input.Role}'
+      backup: '${input.backup}'
+      monitoring: '${input.monitoring}'
+      vmOS: l
+      networkID: '${input.Network}'
+      setCustomHostnameOS: Linux
+      resourceGroupName: Linux
+      lamprole: Orchestrator
+      networks:
+        - tags: []
+          network: '${resource.Cloud_vSphere_Network_1.id}'
+          assignment: static
+          assignIPv6Address: false
+          assignPublicIpAddress: false
+      retryCount: 0
+      folderName: Linux
+      cloneStrategy: FULL
+  Cloud_vSphere_Machine_2:
+    type: Cloud.vSphere.Machine
+    metadata:
+      layoutPosition:
+        - 1
+        - 1
+    properties:
+      imageRef: MIS_RHEL_7.6_Vanilla
+      cpuCount: '${input.cpu}'
+      totalMemoryMB: '${input.memory*1024}'
+      storage:
+        constraints:
+          - tag: '${input.storageTag}'
+      customizationSpec: Linux-in
+      supportPriority: '${input.criticalLevel}'
+      role: '${input.Role}'
+      backup: '${input.backup}'
+      monitoring: '${input.monitoring}'
+      vmOS: l
+      networkID: '${input.Network}'
+      setCustomHostnameOS: Linux
+      resourceGroupName: Linux
+      lamprole: App
+      networks:
+        - tags: []
+          network: '${resource.Cloud_vSphere_Network_1.id}'
+          assignment: static
+          assignIPv6Address: false
+          assignPublicIpAddress: false
+      folderName: Linux
+      retryCount: 0
+      cloneStrategy: FULL
+  Cloud_vSphere_Machine_3:
+    type: Cloud.vSphere.Machine
+    metadata:
+      layoutPosition:
+        - 1
+        - 2
+    properties:
+      imageRef: MIS_RHEL_7.6_Vanilla
+      cpuCount: '${input.cpu}'
+      totalMemoryMB: '${input.memory*1024}'
+      storage:
+        constraints:
+          - tag: '${input.storageTag}'
+      customizationSpec: Linux-in
+      supportPriority: '${input.criticalLevel}'
+      role: '${input.Role}'
+      backup: '${input.backup}'
+      monitoring: '${input.monitoring}'
+      vmOS: l
+      networkID: '${input.Network}'
+      setCustomHostnameOS: Linux
+      resourceGroupName: Linux
+      lamprole: Repo
+      networks:
+        - tags: []
+          network: '${resource.Cloud_vSphere_Network_1.id}'
+          assignment: static
+          assignIPv6Address: false
+          assignPublicIpAddress: false
+      folderName: Linux
+      retryCount: 0
+      cloneStrategy: FULL

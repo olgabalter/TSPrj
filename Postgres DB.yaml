@@ -1,0 +1,158 @@
+formatVersion: 1
+inputs:
+  criticalLevel:
+    type: string
+    title: Env Type
+    oneOf:
+      - title: Development
+        const: dev
+      - title: Test
+        const: tst
+      - title: Production
+        const: prd
+  monitoring:
+    type: boolean
+    default: false
+    title: 'VM Monitoring '
+  backup:
+    type: boolean
+    default: false
+    title: VM Backup
+  cpu:
+    type: integer
+    default: 2
+    title: CPUs
+    minimum: 2
+    maximum: 8
+  memory:
+    type: integer
+    description: Minimum value 4GB - Maximum value 16GB
+    default: 4
+    title: Memory (GB)
+    minimum: 4
+    maximum: 32
+  storage:
+    type: integer
+    default: 60
+    title: Storage (GB)
+    minimum: 60
+    maximum: 80
+  Network:
+    type: string
+    oneOf:
+      - title: ADMIN
+        const: admin
+      - title: ADMIN-DMZ
+        const: admindmz
+      - title: CORP
+        const: corp
+  addStorage:
+    type: boolean
+    default: false
+    title: Add additional storage
+  disks:
+    type: array
+    title: disks
+    items:
+      title: disk
+      type: object
+      properties:
+        size:
+          type: integer
+          title: size
+    maxItems: 1
+  dbUser:
+    type: string
+    title: Postgres DB Username
+  dbName:
+    type: string
+    title: Postgres DB Name
+  dbPassword:
+    type: string
+    title: Postgres DB Password
+  dbVersion:
+    type: string
+    title: Postgres DB Creation Version
+    oneOf:
+      - title: '9.6'
+        const: '9.6'
+      - title: '10.7'
+        const: '10.7'
+      - title: '11.2'
+        const: '11.2'
+  storageTag:
+    type: string
+resources:
+  Cloud_vSphere_Network_1:
+    type: Cloud.vSphere.Network
+    metadata:
+      layoutPosition:
+        - 0
+        - 0
+    properties:
+      networkType: existing
+      constraints:
+        - tag: '${input.Network}'
+  Cloud_vSphere_Machine_1:
+    type: Cloud.vSphere.Machine
+    metadata:
+      layoutPosition:
+        - 1
+        - 0
+    properties:
+      image: Postgres
+      customizationSpec: Linux-in
+      cpuCount: '${input.cpu}'
+      totalMemoryMB: '${input.memory*1024}'
+      storage:
+        constraints:
+          - tag: '${input.storageTag}'
+      VMSoftwareName: Date and Time into textfile
+      vMSoftwareScriptPath: /tmp/date.sh
+      role: ap
+      networkID: '${input.Network}'
+      supportPriority: '${input.criticalLevel}'
+      backup: '${input.backup}'
+      vmOS: l
+      setCustomHostnameOS: Linux
+      monitoring: '${input.monitoring}'
+      resourceGroupName: Linux
+      PostgresDBDeletionScriptPath: /patch/Postgres/day2/DBdelete.yml
+      LinuxAgentUDPath: /root/amdocs/hpudplay.yml
+      LinuxAgentUDArguments: /root/amdocs/hpud/media
+      PostgresDBInstallationScriptPath: /patch/Postgres/postgres.yml
+      PostgresDBCreationScriptPath: /patch/Postgres/day2/DBcreate.yml
+      DBType: Postgres
+      LinuxAgentILMTArguments: /root/amdocs/hplmt/media
+      LinuxAgentILMTPath: /root/amdocs/hplmtplay.yml
+      LinuxAgentMonitoringPath: /root/amdocs/hpavplay.yml
+      LinuxAgentMonitoringArguments: /root/amdocs/hpav/media
+      LinuxAgentPIMPath: /root/amdocs/hpsccmplay.yml
+      LinuxAgentPIMArguments: /root/amdocs/hpsccm/media
+      DBUserName: '${input.dbUser}'
+      DBName: '${input.dbName}'
+      DBPassword: '${input.dbPassword}'
+      DBVersion: '${input.dbVersion}'
+      attachedDisks:
+        - source: '${resource.Cloud_Volume_1.id}'
+      networks:
+        - tags: []
+          network: '${resource.Cloud_vSphere_Network_1.id}'
+          assignment: static
+          assignIPv6Address: false
+          assignPublicIpAddress: false
+      folderName: Linux
+      retryCount: 0
+      cloneStrategy: FULL
+  Cloud_Volume_1:
+    type: Cloud.Volume
+    metadata:
+      layoutPosition:
+        - 1
+        - 1
+    allocatePerInstance: true
+    properties:
+      capacityGb: '${input.disks[count.index].size}'
+      count: '${length(input.disks)}'
+      constraints:
+        - tag: '${input.storageTag}'

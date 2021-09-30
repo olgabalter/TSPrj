@@ -1,0 +1,295 @@
+formatVersion: 1
+inputs:
+  Network:
+    type: string
+    oneOf:
+      - title: ADMIN
+        const: admin
+      - title: ADMIN-DMZ
+        const: admindmz
+      - title: CORP
+        const: corp
+  KubernetesInstallationScriptPath:
+    type: string
+    default: /patch/kubernetes-new/run_kubecluster.yml
+    title: KubernetesInstallationScriptPath
+  KubernetesInstallType:
+    type: string
+    default: Redeploy_Cluster
+    title: KubernetesInstallType
+  KubernetsInstalldashboard:
+    type: string
+    default: 'yes'
+    title: KubernetsInstalldashboard
+  LinuxAgentPIMArguments:
+    type: string
+    default: /root/amdocs/hpsccm/media
+    title: LinuxAgentPIMArguments
+  LinuxAgentILMTArguments:
+    type: string
+    default: /root/amdocs/hplmt/media
+    title: LinuxAgentILMTArguments
+  LinuxAgentMonitoringArguments:
+    type: string
+    default: /root/amdocs/hpav/media
+    title: LinuxAgentMonitoringArguments
+  LinuxAgentUDArguments:
+    type: string
+    default: /root/amdocs/hpud/media
+    title: LinuxAgentUDArguments
+  LinuxAgentUDPath:
+    type: string
+    default: /root/amdocs/hpudplay.yml
+    title: LinuxAgentUDPath
+  LinuxAgentMonitoringPath:
+    type: string
+    default: /root/amdocs/hpavplay.yml
+    title: LinuxAgentMonitoringPath
+  LinuxAgentILMTPath:
+    type: string
+    default: /root/amdocs/hplmtplay.yml
+    title: LinuxAgentILMTPath
+  KubernetesHostPath:
+    type: string
+    default: /patch/kubernetes-new/hosts
+    title: KubernetesHostPath
+  LinuxAgentPIMPath:
+    type: string
+    default: /root/amdocs/hpsccmplay.yml
+    title: LinuxAgentPIMPath
+  Kubernetescniselect:
+    type: string
+    default: Flannel
+    title: Kubernetescniselect
+  KubernetesIngressControl:
+    type: string
+    title: KubernetesIngressControl
+    default: ''
+    enum:
+      - Nginx
+      - Envoy
+      - ''
+  criticalLevel:
+    type: string
+    description: Environment type in which VMs are deploy
+    title: Env Type
+    oneOf:
+      - title: Development
+        const: dev
+      - title: Test
+        const: tst
+  KubernetesClustername:
+    type: string
+    title: Kubernetes Cluster name
+  KubernetesDistribution:
+    type: string
+    title: Kubernetes Distribution
+    default: 1.18.19-0
+    oneOf:
+      - title: 1.18.17-0
+        const: 1.18.17-0
+      - title: 1.18.18-0
+        const: 1.18.18-0
+      - title: 1.18.19-0
+        const: 1.18.19-0
+  KubernetesClusterMode:
+    type: string
+    title: Kubernetes Cluster Mode
+    default: Single_Master_Multi_Node
+    oneOf:
+      - title: Single Master Setup
+        const: Single_Master_Setup
+      - title: 'Single Master:Multiple Slaves'
+        const: Single_Master_Multi_Node
+      - title: 'Multiple Master:Multiple Slaves'
+        const: Multi_Master_Multi_Node
+  ApplicationUser:
+    type: string
+    title: Application User
+  cluster:
+    type: integer
+    default: 1
+    title: Worker Instances
+    minimum: 1
+    maximum: 3
+  lbType:
+    type: string
+    title: lbType
+    default: ''
+    enum:
+      - haproxy
+      - external lb
+      - ''
+  KubernetesDockerDistribution:
+    type: string
+    default: latest
+    title: KubernetesDockerDistribution
+  storageTag:
+    type: string
+resources:
+  Cloud_vSphere_Network_1:
+    type: Cloud.vSphere.Network
+    metadata:
+      layoutPosition:
+        - 0
+        - 0
+    properties:
+      networkType: existing
+      constraints:
+        - tag: '${input.Network}'
+  Cloud_vSphere_Machine_1:
+    type: Cloud.vSphere.Machine
+    metadata:
+      layoutPosition:
+        - 1
+        - 0
+    properties:
+      image: MIS_RHEL_7.6_haproxy
+      cpuCount: 2
+      totalMemoryMB: 1024
+      count: 1
+      storage:
+        constraints:
+          - tag: '${input.storageTag}'
+      Kubernetesrole: Proxy
+      role: kbn
+      networkID: '${input.Network}'
+      supportPriority: '${input.criticalLevel}'
+      resourceGroupName: Linux
+      backup: false
+      monitoring: false
+      customizationSpec: Linux-in
+      vmOS: l
+      setCustomHostnameOS: Linux
+      KubernetesInstallationScriptPath: '${input.KubernetesInstallationScriptPath}'
+      KubernetesInstallType: '${input.KubernetesInstallType}'
+      KubernetsInstalldashboard: '${input.KubernetsInstalldashboard}'
+      LinuxAgentPIMArguments: '${input.LinuxAgentPIMArguments}'
+      LinuxAgentILMTArguments: '${input.LinuxAgentILMTArguments}'
+      LinuxAgentMonitoringArguments: '${input.LinuxAgentMonitoringArguments}'
+      LinuxAgentUDArguments: '${input.LinuxAgentUDArguments}'
+      LinuxAgentUDPath: '${input.LinuxAgentUDPath}'
+      LinuxAgentMonitoringPath: '${input.LinuxAgentMonitoringPath}'
+      LinuxAgentILMTPath: '${input.LinuxAgentILMTPath}'
+      KubernetesHostPath: '${input.KubernetesHostPath}'
+      LinuxAgentPIMPath: '${input.LinuxAgentPIMPath}'
+      Kubernetescniselect: '${input.Kubernetescniselect}'
+      KubernetesIngressControl: '${input.KubernetesIngressControl}'
+      KubernetesClustername: '${input.KubernetesClustername}'
+      KubernetesDistribution: '${input.KubernetesDistribution}'
+      KubernetesClusterMode: '${input.KubernetesClusterMode}'
+      ApplicationUser: '${input.ApplicationUser}'
+      cluster: '${input.cluster}'
+      lbType: '${input.lbType}'
+      KubernetesDockerDistribution: '${input.KubernetesDockerDistribution}'
+      networks:
+        - tags: []
+          network: '${resource.Cloud_vSphere_Network_1.id}'
+          assignment: static
+          assignIPv6Address: false
+          assignPublicIpAddress: false
+      folderName: Linux
+      retryCount: 0
+      cloneStrategy: FULL
+  Cloud_vSphere_Machine_2:
+    type: Cloud.vSphere.Machine
+    metadata:
+      layoutPosition:
+        - 1
+        - 1
+    properties:
+      image: MIS_RHEL_7.6_Worker
+      cpuCount: 2
+      totalMemoryMB: 1024
+      storage:
+        constraints:
+          - tag: '${input.storageTag}'
+      count: 1
+      Kubernetesrole: Worker
+      customizationSpec: Linux-in
+      vmOS: l
+      networkID: '${input.Network}'
+      resourceGroupName: Linux
+      role: kbn
+      supportPriority: '${input.criticalLevel}'
+      KubernetesInstallationScriptPath: '${input.KubernetesInstallationScriptPath}'
+      KubernetesInstallType: '${input.KubernetesInstallType}'
+      KubernetsInstalldashboard: '${input.KubernetsInstalldashboard}'
+      LinuxAgentPIMArguments: '${input.LinuxAgentPIMArguments}'
+      LinuxAgentILMTArguments: '${input.LinuxAgentILMTArguments}'
+      LinuxAgentMonitoringArguments: '${input.LinuxAgentMonitoringArguments}'
+      LinuxAgentUDArguments: '${input.LinuxAgentUDArguments}'
+      LinuxAgentUDPath: '${input.LinuxAgentUDPath}'
+      LinuxAgentMonitoringPath: '${input.LinuxAgentMonitoringPath}'
+      LinuxAgentILMTPath: '${input.LinuxAgentILMTPath}'
+      KubernetesHostPath: '${input.KubernetesHostPath}'
+      LinuxAgentPIMPath: '${input.LinuxAgentPIMPath}'
+      Kubernetescniselect: '${input.Kubernetescniselect}'
+      KubernetesIngressControl: '${input.KubernetesIngressControl}'
+      KubernetesClustername: '${input.KubernetesClustername}'
+      KubernetesDistribution: '${input.KubernetesDistribution}'
+      KubernetesClusterMode: '${input.KubernetesClusterMode}'
+      ApplicationUser: '${input.ApplicationUser}'
+      cluster: '${input.cluster}'
+      lbType: '${input.lbType}'
+      KubernetesDockerDistribution: '${input.KubernetesDockerDistribution}'
+      networks:
+        - tags: []
+          network: '${resource.Cloud_vSphere_Network_1.id}'
+          assignment: static
+          assignIPv6Address: false
+          assignPublicIpAddress: false
+      folderName: Linux
+      retryCount: 0
+      cloneStrategy: FULL
+  Cloud_vSphere_Machine_3:
+    type: Cloud.vSphere.Machine
+    metadata:
+      layoutPosition:
+        - 1
+        - 2
+    properties:
+      image: MIS_RHEL_7.6_Master
+      cpuCount: 2
+      totalMemoryMB: 4096
+      storage:
+        constraints:
+          - tag: '${input.storageTag}'
+      vmOS: l
+      Kubernetesrole: Master
+      role: kbm
+      networkID: '${input.Network}'
+      resourceGroupName: Linux
+      customizationSpec: Linux-in
+      count: 1
+      supportPriority: '${input.criticalLevel}'
+      KubernetesInstallationScriptPath: '${input.KubernetesInstallationScriptPath}'
+      KubernetesInstallType: '${input.KubernetesInstallType}'
+      KubernetsInstalldashboard: '${input.KubernetsInstalldashboard}'
+      LinuxAgentPIMArguments: '${input.LinuxAgentPIMArguments}'
+      LinuxAgentILMTArguments: '${input.LinuxAgentILMTArguments}'
+      LinuxAgentMonitoringArguments: '${input.LinuxAgentMonitoringArguments}'
+      LinuxAgentUDArguments: '${input.LinuxAgentUDArguments}'
+      LinuxAgentUDPath: '${input.LinuxAgentUDPath}'
+      LinuxAgentMonitoringPath: '${input.LinuxAgentMonitoringPath}'
+      LinuxAgentILMTPath: '${input.LinuxAgentILMTPath}'
+      KubernetesHostPath: '${input.KubernetesHostPath}'
+      LinuxAgentPIMPath: '${input.LinuxAgentPIMPath}'
+      Kubernetescniselect: '${input.Kubernetescniselect}'
+      KubernetesIngressControl: '${input.KubernetesIngressControl}'
+      KubernetesClustername: '${input.KubernetesClustername}'
+      KubernetesDistribution: '${input.KubernetesDistribution}'
+      KubernetesClusterMode: '${input.KubernetesClusterMode}'
+      ApplicationUser: '${input.ApplicationUser}'
+      cluster: '${input.cluster}'
+      lbType: '${input.lbType}'
+      KubernetesDockerDistribution: '${input.KubernetesDockerDistribution}'
+      networks:
+        - tags: []
+          network: '${resource.Cloud_vSphere_Network_1.id}'
+          assignment: static
+          assignIPv6Address: false
+          assignPublicIpAddress: false
+      folderName: Linux
+      retryCount: 0
+      cloneStrategy: FULL
