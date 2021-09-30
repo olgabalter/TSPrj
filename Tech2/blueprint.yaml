@@ -1,4 +1,4 @@
-name: Technion - LCCN with dynamic template
+name: 'Technion - LCCN with dynamic template'
 version: 1
 inputs:
   lin_Password:
